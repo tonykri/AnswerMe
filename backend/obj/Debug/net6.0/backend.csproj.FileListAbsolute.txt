@@ -47,3 +47,10 @@
 /home/tony/Documents/AnswerMe/backend/obj/Debug/net6.0/ref/backend.dll
 /home/tony/Documents/AnswerMe/backend/obj/Debug/net6.0/backend.pdb
 /home/tony/Documents/AnswerMe/backend/obj/Debug/net6.0/backend.genruntimeconfig.cache
+/home/tony/Documents/AnswerMe/backend/bin/Debug/net6.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/tony/Documents/AnswerMe/backend/bin/Debug/net6.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/tony/Documents/AnswerMe/backend/bin/Debug/net6.0/Microsoft.IdentityModel.Logging.dll
+/home/tony/Documents/AnswerMe/backend/bin/Debug/net6.0/Microsoft.IdentityModel.Protocols.dll
+/home/tony/Documents/AnswerMe/backend/bin/Debug/net6.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/tony/Documents/AnswerMe/backend/bin/Debug/net6.0/Microsoft.IdentityModel.Tokens.dll
+/home/tony/Documents/AnswerMe/backend/bin/Debug/net6.0/System.IdentityModel.Tokens.Jwt.dll
