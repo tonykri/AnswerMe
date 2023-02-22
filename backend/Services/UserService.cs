@@ -57,7 +57,7 @@ public class UserService : IUserService
     public string ChangePassword(UserChangePasswordDto passwordDto){
         if (passwordDto.Password is null) return "Password is required";
         if (!passwordDto.Password.Equals(passwordDto.ConfirmPassword)) return "Passwords don't match";
-        User user = _dataContext.Users.Where(p => p.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
         if (user is null)
             return "something went wrong";
         if (!_hashing.VerifyPasswordHash(passwordDto.OldPassword, user.PasswordHash, user.PasswordSalt))
@@ -72,7 +72,7 @@ public class UserService : IUserService
     }
 
     public UserProfileDto GetUserInfo(){
-        User user = _dataContext.Users.Where(p => p.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
         var obj = new UserProfileDto(user.FirstName, user.LastName, user.Email, user.BirthDate);
         return obj;
     }
