@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using backend.Dto;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,12 @@ public class PostController : ControllerBase{
     
     private readonly DataContext _dataContext;
     private readonly IPostService _postService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public PostController(DataContext dataContext, IPostService postService) {
+    public PostController(DataContext dataContext, IPostService postService, IHttpContextAccessor httpContextAccessor) {
         _dataContext = dataContext;
         _postService = postService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     [HttpPost("create")]
@@ -31,5 +34,24 @@ public class PostController : ControllerBase{
         var updatedPost = _postService.UpdatePost(post, postId);
         if (updatedPost is null) return BadRequest("Something went wrong");
         return Ok(updatedPost);
+    }
+
+    [HttpGet("viewUser/{userId}")]
+    [Authorize]
+    public async Task<IActionResult> ViewUserPost([FromRoute] string userId) {
+        return Ok(_postService.GetUserPosts(userId));
+    }
+
+    [HttpGet("viewMyPosts")]
+    [Authorize]
+    public async Task<IActionResult> ViewMyPosts() {
+        string userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid);
+        return Ok(_postService.GetUserPosts(userId));
+    }
+
+    [HttpGet("viewAllPosts")]
+    [Authorize]
+    public async Task<IActionResult> ViewAllPosts() {
+        return Ok(_postService.GetAllPosts());
     }
 }
