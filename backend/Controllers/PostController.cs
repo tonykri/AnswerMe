@@ -36,6 +36,14 @@ public class PostController : ControllerBase{
         return Ok(updatedPost);
     }
 
+    [HttpDelete("delete/{postId}")]
+    [Authorize]
+    public async Task<IActionResult> Delete(string postId) {
+        var deletedPost = _postService.DeletePost(postId);
+        if (deletedPost is null) return BadRequest("Something went wrong");
+        return Ok(deletedPost);
+    }
+
     [HttpGet("viewUser/{userId}")]
     [Authorize]
     public async Task<IActionResult> ViewUserPost([FromRoute] string userId) {

@@ -55,6 +55,20 @@ public class PostService : IPostService
         return updatedPost;
     }
 
+    public Post DeletePost(string postId){
+        Guid id = Guid.Parse(postId);
+        var post = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
+        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        if (post is null) return null;
+        if (post.Author.Id != user.Id) return null;
+        var comments = _dataContext.Comments.Where(c => c.CommentedPost.Id == post.Id);
+        var votes = _dataContext.Votes.Where(v => v.VotedPost.Id == post.Id);
+        _dataContext.RemoveRange(comments);
+        _dataContext.RemoveRange(votes);
+        _dataContext.Remove(post);
+        _dataContext.SaveChanges();
+        return post;
+    }
     public Comment CreateComment(CommentCreateUpdateDto comment, string postId){
         Guid id = Guid.Parse(postId);
         var post = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
