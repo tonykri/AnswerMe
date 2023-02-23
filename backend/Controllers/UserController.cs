@@ -59,4 +59,12 @@ public class UserController : ControllerBase{
         if (user is null) return BadRequest("Something went wrong");
         return Ok(user);
     }
+
+    [Authorize]
+    [HttpPut("updateProfile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateProfileDto userDto){
+        var user = _userService.UpdateProfile(userDto);
+        if (user is null) return BadRequest("Something went wrong");
+        return Ok(user);
+    }
 }

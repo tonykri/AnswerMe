@@ -33,8 +33,8 @@ public class UserService : IUserService
         if (registerUser.BirthDate.AddYears(18).Year > DateTime.Now.Year || 
                     registerUser.BirthDate.Year < 1950) 
             return null;
-        if (registerUser.Email is null || registerUser.Password is null || 
-                    registerUser.FirstName is null || registerUser.LastName is null)
+        if (registerUser.Email.Trim(' ').Equals("") || registerUser.Password.Trim(' ').Equals("") || 
+                    registerUser.FirstName.Trim(' ').Equals("") || registerUser.LastName.Trim(' ').Equals(""))
             return null;
         
         
@@ -93,6 +93,19 @@ public class UserService : IUserService
         _dataContext.RemoveRange(comments);
         _dataContext.RemoveRange(votes);
         _dataContext.Remove(user);
+        _dataContext.SaveChanges();
+        return user;
+    }
+
+    public User UpdateProfile(UserUpdateProfileDto userUpdateDto){
+        if (userUpdateDto.BirthDate.AddYears(18).Year > DateTime.Now.Year || 
+                    userUpdateDto.BirthDate.Year < 1950) 
+                    return null;
+        if (userUpdateDto.FirstName.Trim(' ').Equals("") || userUpdateDto.LastName.Trim(' ').Equals("")) return null;
+        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        user.FirstName = userUpdateDto.FirstName;
+        user.LastName = userUpdateDto.LastName;
+        user.BirthDate = userUpdateDto.BirthDate;
         _dataContext.SaveChanges();
         return user;
     }

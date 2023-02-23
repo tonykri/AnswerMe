@@ -9,4 +9,5 @@ public interface IUserService{
     string ChangePassword(UserChangePasswordDto passwordDto);
     UserProfileDto GetUserInfo();
     User DeleteAccount();
+    User UpdateProfile(UserUpdateProfileDto userUpdateDto);
 }
