@@ -8,4 +8,7 @@ public interface IPostService{
     Post UpdatePost(PostCreateUpdateDto post, string postId);
     IEnumerable<Post> GetUserPosts(string userId);
     IEnumerable<Post> GetAllPosts();
+    Comment CreateComment(CommentCreateUpdateDto comment, string postId);
+    Comment UpdateComment(CommentCreateUpdateDto comment, string commentId);
+    Comment DeleteComment(string commentId);
 }

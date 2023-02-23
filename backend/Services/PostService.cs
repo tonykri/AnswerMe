@@ -54,4 +54,39 @@ public class PostService : IPostService
         _dataContext.SaveChanges();
         return updatedPost;
     }
+
+    public Comment CreateComment(CommentCreateUpdateDto comment, string postId){
+        Guid id = Guid.Parse(postId);
+        var post = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
+        if (post is null) return null;
+        Comment createdComment = new Comment();
+        createdComment.Content = comment.Content.Trim(' ');
+        createdComment.Author = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        createdComment.CommentedPost = post;
+        _dataContext.Add(createdComment);
+        _dataContext.SaveChanges();
+        return createdComment;
+    }
+
+    public Comment UpdateComment(CommentCreateUpdateDto comment, string commentId){
+        Guid id = Guid.Parse(commentId);
+        var commentToUpdate = _dataContext.Comments.Where(c => c.Id == id).FirstOrDefault();
+        if (commentToUpdate is null) return null;
+        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        if (commentToUpdate.Author.Id != user.Id) return null;
+        commentToUpdate.Content = comment.Content.Trim(' ');
+        _dataContext.SaveChanges();
+        return commentToUpdate;
+    }
+
+    public Comment DeleteComment(string commentId){
+        Guid id = Guid.Parse(commentId);
+        var commentToDelete = _dataContext.Comments.Where(c => c.Id == id).FirstOrDefault();
+        if (commentToDelete is null) return null;
+        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        if (commentToDelete.Author.Id != user.Id) return null;
+        _dataContext.Remove(commentToDelete);
+        _dataContext.SaveChanges();
+        return commentToDelete;
+    }
 }

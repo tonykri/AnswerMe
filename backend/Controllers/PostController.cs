@@ -54,4 +54,28 @@ public class PostController : ControllerBase{
     public async Task<IActionResult> ViewAllPosts() {
         return Ok(_postService.GetAllPosts());
     }
+
+    [HttpPost("createComment/{postId}")]
+    [Authorize]
+    public async Task<IActionResult> CreateComment([FromBody] CommentCreateUpdateDto comment, [FromRoute] string postId) {
+        var com = _postService.CreateComment(comment, postId);
+        if (com is null) return BadRequest("Something went wrong");
+        return Ok(com);
+    }
+
+    [HttpPut("updateComment/{commentId}")]
+    [Authorize]
+    public async Task<IActionResult> UpdateComment([FromBody] CommentCreateUpdateDto comment, [FromRoute] string commentId) {
+        var com = _postService.UpdateComment(comment, commentId);
+        if (com is null) return BadRequest("Something went wrong");
+        return Ok(com);
+    }
+
+    [HttpDelete("deleteComment/{commentId}")]
+    [Authorize]
+    public async Task<IActionResult> DeleteComment([FromRoute] string commentId) {
+        var com = _postService.DeleteComment(commentId);
+        if (com is null) return BadRequest("Something went wrong");
+        return Ok(com);
+    }
 }
