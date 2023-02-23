@@ -89,4 +89,25 @@ public class PostService : IPostService
         _dataContext.SaveChanges();
         return commentToDelete;
     }
+
+    public Vote VoteComment(string postId, bool vote){
+        Guid id = Guid.Parse(postId);
+        var post = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
+        if (post is null) return null;
+        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        var v = _dataContext.Votes.Where(v => v.Author.Id == user.Id && v.VotedPost.Id == post.Id).FirstOrDefault();
+        if (v is not null) {
+            if (v.Agreed == vote) _dataContext.Remove(v);
+            else v.Agreed = vote;
+            _dataContext.SaveChanges();
+            return v;
+        }
+        Vote createdVote = new Vote();
+        createdVote.Author = user;
+        createdVote.VotedPost = post;
+        createdVote.Agreed = vote;
+        _dataContext.Add(createdVote);
+        _dataContext.SaveChanges();
+        return createdVote;
+    }
 }

@@ -78,4 +78,12 @@ public class PostController : ControllerBase{
         if (com is null) return BadRequest("Something went wrong");
         return Ok(com);
     }
+
+    [HttpPost("votePost/{postId}/{vote}")]
+    [Authorize]
+    public async Task<IActionResult> VoteComment([FromRoute] string postId, [FromRoute] bool vote) {
+        var v = _postService.VoteComment(postId, vote);
+        if (v is null) return BadRequest("Something went wrong");
+        return Ok(v);
+    }
 }

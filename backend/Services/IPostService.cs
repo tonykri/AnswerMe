@@ -11,4 +11,5 @@ public interface IPostService{
     Comment CreateComment(CommentCreateUpdateDto comment, string postId);
     Comment UpdateComment(CommentCreateUpdateDto comment, string commentId);
     Comment DeleteComment(string commentId);
+    Vote VoteComment(string postId, bool vote);
 }
