@@ -8,4 +8,5 @@ public interface IUserService{
     string Login(UserLoginDto user);
     string ChangePassword(UserChangePasswordDto passwordDto);
     UserProfileDto GetUserInfo();
+    User DeleteAccount();
 }

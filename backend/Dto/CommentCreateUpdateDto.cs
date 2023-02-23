@@ -1,5 +1,5 @@
 namespace backend.Dto;
 
 public class CommentCreateUpdateDto{
-    public string Content { get; set; }
+    public string? Content { get; set; }
 }

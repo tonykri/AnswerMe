@@ -51,4 +51,12 @@ public class UserController : ControllerBase{
         var user = _userService.GetUserInfo();
         return Ok(user);
     }
+
+    [Authorize]
+    [HttpDelete("deleteAccount")]
+    public async Task<IActionResult> DeleteAccount(){
+        var user = _userService.DeleteAccount();
+        if (user is null) return BadRequest("Something went wrong");
+        return Ok(user);
+    }
 }

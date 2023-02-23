@@ -76,4 +76,24 @@ public class UserService : IUserService
         var obj = new UserProfileDto(user.FirstName, user.LastName, user.Email, user.BirthDate);
         return obj;
     }
+
+    public User DeleteAccount(){
+        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        if (user is null)
+            return null;
+        var posts = _dataContext.Posts.Where(p => p.Author.Id == user.Id).ToList();
+        var comments = _dataContext.Comments.Where(c => c.Author.Id == user.Id);
+        var votes = _dataContext.Votes.Where(v => v.Author.Id == user.Id);
+        using (HttpClient client = new HttpClient()){
+            foreach (var post in posts){
+                var httpRequest = new HttpRequestMessage(HttpMethod.Delete, "https://localhost:8080/api/Post/delete/"+post.Id.ToString());
+                client.SendAsync(httpRequest);
+            }
+        }
+        _dataContext.RemoveRange(comments);
+        _dataContext.RemoveRange(votes);
+        _dataContext.Remove(user);
+        _dataContext.SaveChanges();
+        return user;
+    }
 }
