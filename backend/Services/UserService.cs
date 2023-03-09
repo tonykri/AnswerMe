@@ -71,8 +71,9 @@ public class UserService : IUserService
         return "ok";
     }
 
-    public UserProfileDto GetUserInfo(){
-        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+    public UserProfileDto GetUserInfo(string userId){
+        Guid userIdGuid = Guid.Parse(userId);
+        User user = _dataContext.Users.Where(u => u.Id == userIdGuid).FirstOrDefault();
         var obj = new UserProfileDto(user.FirstName, user.LastName, user.Email, user.BirthDate);
         return obj;
     }

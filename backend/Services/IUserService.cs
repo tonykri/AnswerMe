@@ -7,7 +7,7 @@ public interface IUserService{
     UserProfileDto Register(UserRegisterDto user);
     string Login(UserLoginDto user);
     string ChangePassword(UserChangePasswordDto passwordDto);
-    UserProfileDto GetUserInfo();
+    UserProfileDto GetUserInfo(string userId);
     User DeleteAccount();
     User UpdateProfile(UserUpdateProfileDto userUpdateDto);
 }

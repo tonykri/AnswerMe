@@ -34,7 +34,8 @@ public class UserController : ControllerBase{
         if (user is null) return BadRequest("Account with current email does not exist");
         string token = _userService.Login(userDto);
         if (token is null) return BadRequest("Wrong password try again");
-        return Ok(token);
+        var res = new UserLoginDataDtoDto(user.FirstName, user.LastName, user.Email, user.BirthDate, token);
+        return Ok(res);
     }
 
     [Authorize]
@@ -46,9 +47,9 @@ public class UserController : ControllerBase{
     }
 
     [Authorize]
-    [HttpGet("profile")]
-    public async Task<IActionResult> Profile(){
-        var user = _userService.GetUserInfo();
+    [HttpGet("profile/{userId}")]
+    public async Task<IActionResult> Profile([FromRoute] string userId){
+        var user = _userService.GetUserInfo(userId);
         return Ok(user);
     }
 
@@ -66,5 +67,11 @@ public class UserController : ControllerBase{
         var user = _userService.UpdateProfile(userDto);
         if (user is null) return BadRequest("Something went wrong");
         return Ok(user);
+    }
+
+    [Authorize]
+    [HttpGet("activeToken")]
+    public async Task<IActionResult> ActiveToken(){
+        return Ok("Token is valid");
     }
 }
