@@ -3,14 +3,12 @@ using backend.Models;
 
 namespace backend.Services;
 
-public interface IPostService{
-    Post CreatePost(PostCreateUpdateDto post);
-    Post UpdatePost(PostCreateUpdateDto post, string postId);
-    Post DeletePost(string postId);
-    IEnumerable<Post> GetUserPosts(string userId);
-    IEnumerable<Post> GetAllPosts();
-    Comment CreateComment(CommentCreateUpdateDto comment, string postId);
-    Comment UpdateComment(CommentCreateUpdateDto comment, string commentId);
-    Comment DeleteComment(string commentId);
-    Vote VoteComment(string postId, bool vote);
+public interface IPostService
+{
+    MsgStatus Create(PostCreateUpdateDto post);
+    MsgStatus Delete(string postId);
+    MsgStatus Update(PostCreateUpdateDto post, string postId);
+    ICollection<Post> ViewAll();
+    object View(string postId);
+
 }

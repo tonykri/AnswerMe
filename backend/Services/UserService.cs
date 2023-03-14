@@ -1,113 +1,110 @@
 using System.Security.Claims;
 using backend.Dto;
 using backend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services;
 
 public class UserService : IUserService
 {
-        private readonly Hashing _hashing;
-        private readonly DataContext _dataContext;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public UserService(DataContext dataContext, Hashing hashing, IHttpContextAccessor httpContextAccessor)
-        {
-            _hashing = hashing;
-            _dataContext = dataContext;
-            _httpContextAccessor = httpContextAccessor;
-        }
+    private readonly Hashing _hashing;
+    private readonly DataContext _dataContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    public UserService(DataContext dataContext, Hashing hashing, IHttpContextAccessor httpContextAccessor)
+    {
+        _hashing = hashing;
+        _dataContext = dataContext;
+        _httpContextAccessor = httpContextAccessor;
+    }
 
-    public string Login(UserLoginDto loginUser)
+    public object Login(UserLoginDto loginUser)
     {
         User? user = _dataContext.Users.Where(p => p.Email == loginUser.Email).FirstOrDefault();
+        if (user is null) return new MsgStatus("Account with current email does not exist", 400);
         byte[]? PasswordHash = user.PasswordHash;
         byte[]? PasswordSalt = user.PasswordSalt;
 
         if (!_hashing.VerifyPasswordHash(loginUser.Password, PasswordHash, PasswordSalt))
-            return null;
+            return new MsgStatus("Wrong password", 400);
 
-        return _hashing.CreateToken(user);  
+        string token = _hashing.CreateToken(user);
+        return new UserLoginDataDtoDto(user.Firstname, user.Lastname, user.Email, user.Birthdate, token);
     }
 
-    public UserProfileDto Register(UserRegisterDto registerUser)
+    public MsgStatus Register(UserRegisterDto registerUser)
     {
-        if (registerUser.BirthDate.AddYears(18).Year > DateTime.Now.Year || 
-                    registerUser.BirthDate.Year < 1950) 
-            return null;
-        if (registerUser.Email.Trim(' ').Equals("") || registerUser.Password.Trim(' ').Equals("") || 
-                    registerUser.FirstName.Trim(' ').Equals("") || registerUser.LastName.Trim(' ').Equals(""))
-            return null;
+        if (registerUser.Birthdate.AddYears(18).Year > DateTime.Now.Year ||
+                    registerUser.Birthdate.Year < 1950)
+            return new MsgStatus("Not valid age", 400);
         
-        
+        registerUser.Password = registerUser.Password.Trim();
+        if (registerUser.Password.Length < 5) return new MsgStatus("Password must be at least 5 characters", 400);
+
         User user = new User();
         _hashing.CreatePasswordHash(registerUser.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-        user.BirthDate = registerUser.BirthDate;
+        user.Birthdate = registerUser.Birthdate;
         user.Email = registerUser.Email;
-        user.FirstName = registerUser.FirstName;
-        user.LastName = registerUser.LastName;
+        user.Firstname = registerUser.Firstname;
+        user.Lastname = registerUser.Lastname;
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
 
         _dataContext.Add(user);
         _dataContext.SaveChanges();
 
-        return new UserProfileDto(user.FirstName, user.LastName, user.Email, user.BirthDate);
+        return new MsgStatus("Account created", 200);
     }
 
-    public string ChangePassword(UserChangePasswordDto passwordDto){
-        if (passwordDto.Password is null) return "Password is required";
-        if (!passwordDto.Password.Equals(passwordDto.ConfirmPassword)) return "Passwords don't match";
+    public MsgStatus ChangePassword(UserChangePasswordDto passwordDto)
+    {
+        if (!passwordDto.Password.Equals(passwordDto.ConfirmPassword)) return new MsgStatus("Passwords do not match", 400);
         User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        if (user is null)
-            return "something went wrong";
+
         if (!_hashing.VerifyPasswordHash(passwordDto.OldPassword, user.PasswordHash, user.PasswordSalt))
-            return "Current password is not correct";
+            return new MsgStatus("Current password is not correct", 400);
+
+        passwordDto.Password = passwordDto.Password.Trim();
+        if (passwordDto.Password.Length < 5) return new MsgStatus("Password must be at least 5 characters", 400);
 
         _hashing.CreatePasswordHash(passwordDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
         _dataContext.SaveChanges();
-        return "ok";
+        return new MsgStatus("Password changed", 200);
     }
 
-    public UserProfileDto GetUserInfo(string userId){
-        Guid userIdGuid = Guid.Parse(userId);
-        User user = _dataContext.Users.Where(u => u.Id == userIdGuid).FirstOrDefault();
-        var obj = new UserProfileDto(user.FirstName, user.LastName, user.Email, user.BirthDate);
-        return obj;
-    }
-
-    public User DeleteAccount(){
+    public MsgStatus DeleteAccount(){
         User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        if (user is null)
-            return null;
-        var posts = _dataContext.Posts.Where(p => p.Author.Id == user.Id).ToList();
-        var comments = _dataContext.Comments.Where(c => c.Author.Id == user.Id);
-        var votes = _dataContext.Votes.Where(v => v.Author.Id == user.Id);
-        using (HttpClient client = new HttpClient()){
-            foreach (var post in posts){
-                var httpRequest = new HttpRequestMessage(HttpMethod.Delete, "https://localhost:8080/api/Post/delete/"+post.Id.ToString());
-                client.SendAsync(httpRequest);
-            }
-        }
-        _dataContext.RemoveRange(comments);
-        _dataContext.RemoveRange(votes);
         _dataContext.Remove(user);
         _dataContext.SaveChanges();
-        return user;
+        return new MsgStatus("Account deleted", 200);
     }
 
-    public User UpdateProfile(UserUpdateProfileDto userUpdateDto){
-        if (userUpdateDto.BirthDate.AddYears(18).Year > DateTime.Now.Year || 
-                    userUpdateDto.BirthDate.Year < 1950) 
-                    return null;
-        if (userUpdateDto.FirstName.Trim(' ').Equals("") || userUpdateDto.LastName.Trim(' ').Equals("")) return null;
+    public MsgStatus UpdateProfile(UserUpdateProfileDto userDto){
         User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        user.FirstName = userUpdateDto.FirstName;
-        user.LastName = userUpdateDto.LastName;
-        user.BirthDate = userUpdateDto.BirthDate;
+
+        if (userDto.Birthdate.AddYears(18).Year > DateTime.Now.Year ||
+                    userDto.Birthdate.Year < 1950)
+            return new MsgStatus("Not valid age", 400);
+        
+        userDto.Firstname = userDto.Firstname.Trim();
+        userDto.Lastname = userDto.Lastname.Trim();
+
+        if (userDto.Firstname.Length < 1 || userDto.Lastname.Length < 1) return new MsgStatus("Fields cannot be blank", 400);
+
+        user.Birthdate = userDto.Birthdate;
+        user.Firstname = userDto.Firstname;
+        user.Lastname = userDto.Lastname;
         _dataContext.SaveChanges();
-        return user;
+        return new MsgStatus("Profile updated", 200);
+    }
+
+
+    public object GetUserProfile(string userEmail){
+        User user = _dataContext.Users.Where(u => u.Email == userEmail).Include(u => u.Posts).FirstOrDefault();
+        if (user is null) return new MsgStatus("User does not exist", 404);
+        return new UserProfileWithPostsDto(user.Firstname, user.Lastname, user.Email, user.Birthdate, user.Posts);
     }
 }

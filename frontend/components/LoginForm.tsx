@@ -21,10 +21,10 @@ export default function LoginForm(props: any) {
     }).then(res => {
       console.log(res);
       localStorage.setItem('token', res.data.token);
-      localStorage.setItem('firstName', res.data.firstName);
-      localStorage.setItem('lastName', res.data.lastName);
+      localStorage.setItem('firstname', res.data.firstname);
+      localStorage.setItem('lastname', res.data.lastname);
       localStorage.setItem('email', res.data.email);
-      localStorage.setItem('birthDate', res.data.birthDate);
+      localStorage.setItem('birthdate', res.data.birthdate);
       router.push('/home');
     }).catch(err => {
       console.log(err);
@@ -53,7 +53,7 @@ export default function LoginForm(props: any) {
       </div>}
       <div className="mb-6 mt-6 w-100 flex justify-between">
         <h3 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Not a user? <span className="underline cursor-pointer hover:text-blue-600 dark:hover:text-blue-600 dark:text-white" onClick={() => props.viewLogin(false)}>Sign up</span></h3>
-        <ButtonTheme />
+          <ButtonTheme />
       </div>
     </form>
   )

@@ -5,9 +5,11 @@ namespace backend.Models;
 public class Vote{
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
-    public Post? VotedPost { get; set; }
+    [Required]
     public bool Agreed { get; set; }
-    public User? Author { get; set; }
-    public DateTime Created { get; set; } = DateTime.Now;
+    [Required]
+    public User? User { get; set; }
+    [Required]
+    public Comment? Comment { get; set; }
 
 }

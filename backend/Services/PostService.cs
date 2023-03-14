@@ -16,112 +16,68 @@ public class PostService : IPostService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public Post CreatePost(PostCreateUpdateDto post)
+    public MsgStatus Create(PostCreateUpdateDto post)
     {
-        if (String.IsNullOrEmpty(post.Title.Trim(' ')) || String.IsNullOrEmpty(post.Content.Trim(' '))) return null;
+        post.Title = post.Title.Trim();
+        post.Content = post.Content.Trim();
+        if (post.Title.Length < 3 || post.Content.Length < 3) return new MsgStatus("Fields cannot be blank", 400);
 
-        Post createdPost = new Post();
-        createdPost.Title = post.Title.Trim(' ');
-        createdPost.Content = post.Content.Trim(' ');
-        createdPost.Author = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        
-        _dataContext.Add(createdPost);
+        Post p = new Post();
+        p.Title = post.Title;
+        p.Content = post.Content;
+        p.User = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        _dataContext.Add(p);
+        p.User.Posts.Add(p);
         _dataContext.SaveChanges();
-        return createdPost;
+        return new MsgStatus("Post created", 200);
     }
 
-    public IEnumerable<Post> GetUserPosts(string userId)
+    public MsgStatus Delete(string postId)
     {
-        Guid id = Guid.Parse(userId);
-        return _dataContext.Posts.Where(p => p.Author.Id == id).Include(p => p.Author);
-    }
+        Post post = _dataContext.Posts.Where(p => p.Id == Guid.Parse(postId)).FirstOrDefault();
+        if (post is null) return new MsgStatus("Post not found", 404);
 
-     public IEnumerable<Post> GetAllPosts()
-    {
-        return _dataContext.Posts.Include(p => p.Author);
-    }
+        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        if (!post.User.Email.Equals(user.Email)) return new MsgStatus("Cannot delete this post", 401);
 
-    public Post UpdatePost(PostCreateUpdateDto post, string postId)
-    {
-        Guid id = Guid.Parse(postId);
-        var updatedPost = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
-        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        if (updatedPost is null) return null;
-        if (updatedPost.Author.Id != user.Id) return null;
-        if (String.IsNullOrEmpty(post.Title.Trim(' ')) || String.IsNullOrEmpty(post.Content.Trim(' '))) return null;
-        updatedPost.Title = post.Title.Trim(' ');
-        updatedPost.Content = post.Content.Trim(' ');
-        _dataContext.SaveChanges();
-        return updatedPost;
-    }
-
-    public Post DeletePost(string postId){
-        Guid id = Guid.Parse(postId);
-        var post = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
-        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        if (post is null) return null;
-        if (post.Author.Id != user.Id) return null;
-        var comments = _dataContext.Comments.Where(c => c.CommentedPost.Id == post.Id);
-        var votes = _dataContext.Votes.Where(v => v.VotedPost.Id == post.Id);
-        _dataContext.RemoveRange(comments);
-        _dataContext.RemoveRange(votes);
         _dataContext.Remove(post);
         _dataContext.SaveChanges();
+        return new MsgStatus("Post deleted", 200);
+    }
+
+
+    public MsgStatus Update(PostCreateUpdateDto post, string postId)
+    {
+        post.Title = post.Title.Trim();
+        post.Content = post.Content.Trim();
+        if (post.Title.Length < 3 || post.Content.Length < 3) return new MsgStatus("Fields cannot be blank", 400);
+
+        Post p = _dataContext.Posts.Where(p => p.Id == Guid.Parse(postId)).FirstOrDefault();
+        if (p is null) return new MsgStatus("Post not found", 404);
+
+        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
+        if (!p.User.Email.Equals(user.Email)) return new MsgStatus("Cannot update this post", 401);
+
+        p.Title = post.Title;
+        p.Content = post.Content;
+        p.Updated = DateTime.Now;
+        _dataContext.SaveChanges();
+        return new MsgStatus("Post updated", 200);
+    }
+
+
+    public ICollection<Post> ViewAll(){
+        return _dataContext.Posts.Include(p => p.User).OrderByDescending(p => p.Created).ToList();
+    }
+
+
+    public object View(string postId){
+        Post post = _dataContext.Posts.Where(p => p.Id == Guid.Parse(postId))
+            .Include(p => p.User)
+            .Include(p => p.Comments).ThenInclude(c => c.User)
+            .Include(p => p.Comments).ThenInclude(c => c.Votes)
+            .FirstOrDefault();
+        if (post is null) return new MsgStatus("Post not found", 404);
         return post;
-    }
-    public Comment CreateComment(CommentCreateUpdateDto comment, string postId){
-        Guid id = Guid.Parse(postId);
-        var post = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
-        if (post is null) return null;
-        Comment createdComment = new Comment();
-        createdComment.Content = comment.Content.Trim(' ');
-        createdComment.Author = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        createdComment.CommentedPost = post;
-        _dataContext.Add(createdComment);
-        _dataContext.SaveChanges();
-        return createdComment;
-    }
-
-    public Comment UpdateComment(CommentCreateUpdateDto comment, string commentId){
-        Guid id = Guid.Parse(commentId);
-        var commentToUpdate = _dataContext.Comments.Where(c => c.Id == id).FirstOrDefault();
-        if (commentToUpdate is null) return null;
-        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        if (commentToUpdate.Author.Id != user.Id) return null;
-        commentToUpdate.Content = comment.Content.Trim(' ');
-        _dataContext.SaveChanges();
-        return commentToUpdate;
-    }
-
-    public Comment DeleteComment(string commentId){
-        Guid id = Guid.Parse(commentId);
-        var commentToDelete = _dataContext.Comments.Where(c => c.Id == id).FirstOrDefault();
-        if (commentToDelete is null) return null;
-        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        if (commentToDelete.Author.Id != user.Id) return null;
-        _dataContext.Remove(commentToDelete);
-        _dataContext.SaveChanges();
-        return commentToDelete;
-    }
-
-    public Vote VoteComment(string postId, bool vote){
-        Guid id = Guid.Parse(postId);
-        var post = _dataContext.Posts.Where(p => p.Id == id).FirstOrDefault();
-        if (post is null) return null;
-        var user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-        var v = _dataContext.Votes.Where(v => v.Author.Id == user.Id && v.VotedPost.Id == post.Id).FirstOrDefault();
-        if (v is not null) {
-            if (v.Agreed == vote) _dataContext.Remove(v);
-            else v.Agreed = vote;
-            _dataContext.SaveChanges();
-            return v;
-        }
-        Vote createdVote = new Vote();
-        createdVote.Author = user;
-        createdVote.VotedPost = post;
-        createdVote.Agreed = vote;
-        _dataContext.Add(createdVote);
-        _dataContext.SaveChanges();
-        return createdVote;
     }
 }

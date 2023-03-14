@@ -83,7 +83,7 @@ export default function RegisterForm(props: any) {
       </div>}
       <div className="mb-6 mt-6 w-100 flex justify-between">
         <h3 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Already a user? <span className="underline cursor-pointer hover:text-blue-600 dark:hover:text-blue-600 dark:text-white" onClick={()=>props.viewLogin(true)}>Sign in</span></h3>
-        <ButtonTheme />
+          <ButtonTheme />
       </div>
     </form>
   )

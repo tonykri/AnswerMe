@@ -2,14 +2,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace backend.Models;
 
-public class User{
+public class User
+{
     [Key]
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
+    [MaxLength(100)]
     public string? Email { get; set; }
+    [Required]
     public byte[]? PasswordHash { get; set; }
+    [Required]
     public byte[]? PasswordSalt { get; set; }
-    public DateOnly BirthDate { get; set; }
-
+    [Required]
+    [MaxLength(50)]
+    public string? Firstname { get; set; }
+    [Required]
+    [MaxLength(50)]
+    public string? Lastname { get; set; }
+    [Required]
+    public DateOnly Birthdate { get; set; }
+    public ICollection<Post>? Posts { get; set; }
+    public ICollection<Comment>? Comments { get; set; }
+    public ICollection<Vote>? Votes { get; set; }
 }

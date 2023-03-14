@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using backend.Dto;
+using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,78 +20,42 @@ public class PostController : ControllerBase{
         _httpContextAccessor = httpContextAccessor;
     }
 
+    [Authorize]
     [HttpPost("create")]
-    [Authorize]
-    public async Task<IActionResult> Create([FromBody] PostCreateUpdateDto post) {
-        var createdPost = _postService.CreatePost(post);
-        if (createdPost is null) return BadRequest("Something went wrong");
-        return Ok(createdPost);
+    public IActionResult Create([FromBody] PostCreateUpdateDto post){
+        MsgStatus res = _postService.Create(post);
+        if (res.StatusCode != 200) return BadRequest(res);
+        return Ok(res);
     }
 
-    [HttpPut("update/{postId}")]
     [Authorize]
-    public async Task<IActionResult> Update([FromBody] PostCreateUpdateDto post, [FromRoute] string postId) {
-        var updatedPost = _postService.UpdatePost(post, postId);
-        if (updatedPost is null) return BadRequest("Something went wrong");
-        return Ok(updatedPost);
-    }
-
     [HttpDelete("delete/{postId}")]
-    [Authorize]
-    public async Task<IActionResult> Delete(string postId) {
-        var deletedPost = _postService.DeletePost(postId);
-        if (deletedPost is null) return BadRequest("Something went wrong");
-        return Ok(deletedPost);
+    public IActionResult Delete([FromRoute] string postId){
+        MsgStatus res = _postService.Delete(postId);
+        if (res.StatusCode != 200) return BadRequest(res);
+        return Ok(res);
     }
 
-    [HttpGet("viewUser/{userId}")]
     [Authorize]
-    public async Task<IActionResult> ViewUserPost([FromRoute] string userId) {
-        return Ok(_postService.GetUserPosts(userId));
+    [HttpPut("update/{postId}")]
+    public IActionResult Update([FromBody] PostCreateUpdateDto post, [FromRoute] string postId){
+        MsgStatus res = _postService.Update(post, postId);
+        if (res.StatusCode != 200) return BadRequest(res);
+        return Ok(res);
     }
 
-    [HttpGet("viewMyPosts")]
     [Authorize]
-    public async Task<IActionResult> ViewMyPosts() {
-        string userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Sid);
-        return Ok(_postService.GetUserPosts(userId));
-    }
-
     [HttpGet("viewAllPosts")]
-    [Authorize]
-    public async Task<IActionResult> ViewAllPosts() {
-        return Ok(_postService.GetAllPosts());
+    public IActionResult ViewAll(){
+        ICollection<Post> res = _postService.ViewAll();
+        return Ok(res);
     }
 
-    [HttpPost("createComment/{postId}")]
     [Authorize]
-    public async Task<IActionResult> CreateComment([FromBody] CommentCreateUpdateDto comment, [FromRoute] string postId) {
-        var com = _postService.CreateComment(comment, postId);
-        if (com is null) return BadRequest("Something went wrong");
-        return Ok(com);
-    }
-
-    [HttpPut("updateComment/{commentId}")]
-    [Authorize]
-    public async Task<IActionResult> UpdateComment([FromBody] CommentCreateUpdateDto comment, [FromRoute] string commentId) {
-        var com = _postService.UpdateComment(comment, commentId);
-        if (com is null) return BadRequest("Something went wrong");
-        return Ok(com);
-    }
-
-    [HttpDelete("deleteComment/{commentId}")]
-    [Authorize]
-    public async Task<IActionResult> DeleteComment([FromRoute] string commentId) {
-        var com = _postService.DeleteComment(commentId);
-        if (com is null) return BadRequest("Something went wrong");
-        return Ok(com);
-    }
-
-    [HttpPost("votePost/{postId}/{vote}")]
-    [Authorize]
-    public async Task<IActionResult> VoteComment([FromRoute] string postId, [FromRoute] bool vote) {
-        var v = _postService.VoteComment(postId, vote);
-        if (v is null) return BadRequest("Something went wrong");
-        return Ok(v);
+    [HttpGet("{postId}")]
+    public IActionResult View([FromRoute] string postId){
+        var res = _postService.View(postId);
+        if (res is MsgStatus) return BadRequest(res);
+        return Ok(res);
     }
 }

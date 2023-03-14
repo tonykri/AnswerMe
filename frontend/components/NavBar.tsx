@@ -2,28 +2,15 @@
 import { Navbar, Dropdown } from "flowbite-react"
 import ButtonTheme from "./ButtonTheme"
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { useEffect } from "react";
+import ActiveToken from "@/helper/ActiveToken";
 
 
 export default function NavBar() {
     const router = useRouter();
 
-    useEffect(() => {
-    if (!localStorage.getItem('token')) {
-        router.push('/');
-    } else {
-        axios.get('https://localhost:8080/api/User/activeToken', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}` 
-            }
-          }).catch(() => {
-            router.push('/');
-        });
-    }
-}, [])
+    ActiveToken();
 
-    function Logout(){
+    function Logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('firstName');
         localStorage.removeItem('lastName');
@@ -35,7 +22,7 @@ export default function NavBar() {
         <Navbar
             fluid={true}
             rounded={true}
-            className='bg-slate-100'
+            className='bg-slate-100 mb-2'
         >
             <Navbar.Brand href="/home">
                 <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
@@ -98,7 +85,7 @@ export default function NavBar() {
                             <Dropdown.Item>
                                 Settings
                             </Dropdown.Item>
-                            <Dropdown.Item className="hover:bg-red-700 hover:text-white dark:hover:bg-red-700 dark:hover:text-white">
+                            <Dropdown.Item className="hover:bg-red-700 hover:text-white dark:hover:bg-red-700 dark:hover:text-white" onClick={Logout}>
                                 Sign out
                             </Dropdown.Item>
                             <Dropdown.Item>

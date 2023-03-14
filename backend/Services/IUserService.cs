@@ -3,11 +3,12 @@ using backend.Models;
 
 namespace backend.Services;
 
-public interface IUserService{
-    UserProfileDto Register(UserRegisterDto user);
-    string Login(UserLoginDto user);
-    string ChangePassword(UserChangePasswordDto passwordDto);
-    UserProfileDto GetUserInfo(string userId);
-    User DeleteAccount();
-    User UpdateProfile(UserUpdateProfileDto userUpdateDto);
+public interface IUserService
+{
+    MsgStatus Register(UserRegisterDto user);
+    object Login(UserLoginDto user);
+    MsgStatus ChangePassword(UserChangePasswordDto passwordDto);
+    MsgStatus DeleteAccount();
+    MsgStatus UpdateProfile(UserUpdateProfileDto userDto);
+    object GetUserProfile(string userId);
 }

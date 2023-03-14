@@ -11,4 +11,31 @@ public class DataContext: DbContext{
     public DbSet<Post> Posts { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Vote> Votes { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder){
+        modelBuilder.Entity<User>()
+        .HasMany(u => u.Posts)
+        .WithOne(p => p.User)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+        .HasMany(u => u.Comments)
+        .WithOne(c => c.User)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+        .HasMany(u => u.Votes)
+        .WithOne(v => v.User)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Post>()
+        .HasMany(p => p.Comments)
+        .WithOne(c => c.Post)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Comment>()
+        .HasMany(c => c.Votes)
+        .WithOne(v => v.Comment)
+        .OnDelete(DeleteBehavior.Cascade);
+    }
 }
