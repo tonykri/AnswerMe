@@ -75,8 +75,9 @@ public class PostService : IPostService
         Post post = _dataContext.Posts.Where(p => p.Id == Guid.Parse(postId))
             .Include(p => p.User)
             .Include(p => p.Comments).ThenInclude(c => c.User)
-            .Include(p => p.Comments).ThenInclude(c => c.Votes)
+            .Include(p => p.Comments)
             .FirstOrDefault();
+        post.Comments.OrderByDescending(c => c.Created);
         if (post is null) return new MsgStatus("Post not found", 404);
         return post;
     }

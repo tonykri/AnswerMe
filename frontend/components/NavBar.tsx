@@ -2,20 +2,18 @@
 import { Navbar, Dropdown } from "flowbite-react"
 import ButtonTheme from "./ButtonTheme"
 import { useRouter } from "next/navigation";
-import ActiveToken from "@/helper/ActiveToken";
 
 
 export default function NavBar() {
     const router = useRouter();
 
-    ActiveToken();
 
     function Logout() {
         localStorage.removeItem('token');
-        localStorage.removeItem('firstName');
-        localStorage.removeItem('lastName');
+        localStorage.removeItem('firstname');
+        localStorage.removeItem('lastname');
         localStorage.removeItem('email');
-        localStorage.removeItem('birthDate');
+        localStorage.removeItem('birthdate');
         router.push('/');
     }
     return (

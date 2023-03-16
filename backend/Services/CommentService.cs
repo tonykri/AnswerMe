@@ -64,28 +64,4 @@ public class CommentService : ICommentService
         return new MsgStatus("Comment deleted", 200);
     }
 
-
-    public MsgStatus Vote(string commentId, bool agree)
-    {
-        Comment com = _dataContext.Comments.Where(c => c.Id == Guid.Parse(commentId)).FirstOrDefault();
-        if (com is null) return new MsgStatus("Comment does not exist", 404);
-        User user = _dataContext.Users.Where(u => u.Email == _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email)).FirstOrDefault();
-
-        Vote vote = _dataContext.Votes.Where(v => v.Comment.Id == com.Id && v.User.Email == user.Email).FirstOrDefault();
-        if (vote is null)
-        {
-            Vote newVote = new Vote();
-            newVote.Comment = com;
-            newVote.Agreed = agree;
-            newVote.User = user;
-            _dataContext.Add(newVote);
-        }
-        else
-        {
-            if (vote.Agreed == agree) _dataContext.Remove(vote);
-            else vote.Agreed = agree;
-        }
-        _dataContext.SaveChanges();
-        return new MsgStatus("Ok", 200);
-    }
 }

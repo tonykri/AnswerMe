@@ -21,5 +21,4 @@ public class User
     public DateOnly Birthdate { get; set; }
     public ICollection<Post>? Posts { get; set; }
     public ICollection<Comment>? Comments { get; set; }
-    public ICollection<Vote>? Votes { get; set; }
 }

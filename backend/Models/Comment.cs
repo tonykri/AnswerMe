@@ -15,5 +15,4 @@ public class Comment
     public User? User { get; set; }
     [Required]
     public Post? Post { get; set; }
-    public ICollection<Vote>? Votes { get; set; }
 }

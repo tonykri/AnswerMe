@@ -45,14 +45,5 @@ public class CommentController : ControllerBase{
         if (res.StatusCode != 200) return BadRequest(res);
         return Ok(res);
     }
-
-
-    [HttpGet("{commentId}/{agree}")]
-    public ActionResult Vote([FromRoute] string commentId, [FromRoute] bool agree)
-    {
-        MsgStatus res = _commentService.Vote(commentId, agree);
-        if (res.StatusCode != 200) return BadRequest(res);
-        return Ok(res);
-    }
     
 }

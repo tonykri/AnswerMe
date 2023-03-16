@@ -5,12 +5,16 @@ import axios from "axios"
 import CreatePost from "./CreatePost"
 
 export default function PostsWrapper() {
-    const [posts, setPosts] = useState([{ id: "" }]);
+    interface Provider {
+        id: string;
+    }
+    const [posts, setPosts] = useState<Provider[]>([]);
     const [viewCreatePost, setViewCreatePost] = useState(false);
     const [viewDeleted, setViewDeleted] = useState(false);
     const [viewUpdated, setViewUpdated] = useState(false);
     const [reload, setReload] = useState(false);
     const [loadData, setLoadData] = useState("Loading");
+
 
     function deletePost(id: any) {
         axios.delete(`https://localhost:8080/api/Post/delete/${id}`, {
@@ -26,7 +30,7 @@ export default function PostsWrapper() {
         });
     }
 
-    function handleReload(){
+    function handleReload() {
         setReload(!reload);
     }
 
@@ -70,11 +74,11 @@ export default function PostsWrapper() {
                 </button>
             </div>}
             {viewCreatePost ?
-                <CreatePost viewCreateForm={setViewCreatePost} reloadPage={handleReload}/> :
+                <CreatePost viewCreateForm={setViewCreatePost} reloadPage={handleReload} /> :
                 <button type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 ml-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onClick={() => setViewCreatePost(true)}>Create Post</button>
             }
 
-            {posts.length > 0 && posts[0].id !== "" ? posts.map(item => (<Post key={item.id} {...item} deletePost={deletePost} viewUpdatedToast={setViewUpdated} />)) :
+            {posts.length > 0 ? posts.map(item => (<Post key={item.id} {...item} deletePost={deletePost} viewUpdatedToast={setViewUpdated} />)) :
                 <h1 className="text-3xl mt-20 text-center">{loadData}</h1>
             }
 

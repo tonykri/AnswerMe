@@ -1,14 +1,14 @@
-import PostsWrapper from "@/components/PostsWrapper"
 import NavBar from "@/components/NavBar"
+import PostCommentsWrapper from "@/components/PostCommentsWrapper"
 import ActiveToken from "@/helper/ActiveToken"
 
-export default function Home() {
+export default async function Home({ params }: any) {
 
     return (
         <>
             <ActiveToken />
             <NavBar />
-            <PostsWrapper />
+            <PostCommentsWrapper postId={params.postId} />
         </>
     )
 }
